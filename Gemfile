@@ -1,4 +1,10 @@
 source 'https://rubygems.org'
+ruby '2.3.1'
 gem 'mongoid', git: 'https://github.com/mongodb/mongoid', tag: 'v6.0.0'
 gem 'activesupport'
+gem 'json'
+gem 'httparty'
 
+gem 'pry-byebug'
+gem 'digest'
+gem 'trollop'

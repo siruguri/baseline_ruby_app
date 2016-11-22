@@ -8,32 +8,48 @@ require 'active_support/time'
 
 Mongoid.load!("config/mongoid.yml", :development)
 appconfig = YAML::load(File.open('config/app.yml')) if File.exists?('config/app.yml')
-class App
-  def self.root
-    Pathname.new(File.dirname(__FILE__)).realpath.to_s
-  end
 
-  def self.config(cfg=nil)
-    if cfg.nil?
-      return @_cfg
-    else
-      @_cfg={}
-      cfg.keys.each do |k|
-        @_cfg[k]=cfg[k]
+module App
+  class App
+    attr_reader :args
+
+    def self.multiplex(inst)
+      sequence = inst.args[:commands] || 'test1,test2'
+      syms = sequence.split(',').map { |s| s.to_sym }
+      syms.each do |s|
+        inst.send s
       end
-      
-      # Defaults
+    end
+    
+    def self.root
+      Pathname.new(File.dirname(__FILE__)).realpath.to_s
+    end
+
+    def self.args=(list = [])
+      @args = list
+    end
+    
+    def self.config(cfg=nil)
+      if cfg.nil?
+        return @_cfg
+      else
+        @_cfg={}
+        cfg.keys.each do |k|
+          @_cfg[k]=cfg[k]
+        end
+        
+        # Defaults
+      end
     end
   end
 end
 
 Dir.glob(File.join('models', '**', '*rb')).each { |f| require_relative f }
 Dir.glob(File.join('lib', '**', '*rb')).each { |f| require_relative f }
+Dir.glob(File.join('app', '**', '*rb')).each { |f| require_relative f }
 
-App.config(appconfig)
+App::App.config(appconfig)
 
-puts RunRecord.count
-r = RunRecord.new run_tag: 'test', run_at: Time.now
-r.save!
-puts " -> #{RunRecord.count}"
-
+a = App::App.new
+a.parse_cli_args
+App::App.multiplex a # defaults to test1, test2 (both in app/test_1.rb)
