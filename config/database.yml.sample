@@ -1,0 +1,5 @@
+adapter: sqlite3
+database:  db/development.sqlite
+pool: 5
+timeout: 10000
+options: "PRAGMA auto_vacuum=1"
